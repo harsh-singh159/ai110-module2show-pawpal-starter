@@ -1,71 +1,84 @@
 # PawPal+ Project Reflection
 
-## 1. System Design
+## 1. How did the design change during implementation?
 
-**a. Initial design**
+The required design began with four classes: `Owner`, `Pet`, `Task`, and `Scheduler`. That basic
+structure remained useful throughout the project, but `Task` required more information than the
+earliest design suggested.
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+I added `duration_minutes` because conflict detection cannot be implemented correctly with only
+a starting timestamp. I also added `priority` to support deterministic task organization when
+multiple tasks share the same scheduled time. Finally, I added a `completed` flag so completed
+tasks do not continue to generate active conflict warnings.
 
-**b. Design changes**
+These were not UI-only changes. They changed the domain model, so I updated the final UML to
+match the implementation.
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+## 2. Why did I use a CLI-first workflow?
 
----
+I implemented `pawpal_system.py` and verified it using `main.py` before building the Streamlit
+interface. This separated application behavior from presentation.
 
-## 2. Scheduling Logic and Tradeoffs
+That made it possible to verify sorting, recurrence, and conflict logic without depending on
+Streamlit state or button behavior. When the UI was added later, it reused already-tested
+backend methods instead of reimplementing scheduling logic.
 
-**a. Constraints and priorities**
+## 3. What did automated testing prove?
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The pytest suite verifies required normal behavior and edge cases.
 
-**b. Tradeoffs**
+The tests check:
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+- chronological sorting,
+- priority tie-breaking,
+- daily recurrence,
+- weekly recurrence,
+- overlapping-task conflict detection,
+- the boundary where one task starts exactly when another ends,
+- exclusion of completed tasks from active conflict warnings.
 
----
+The adjacent-task test was especially important because conflict detection often fails at time
+boundaries when `<` and `<=` are confused.
 
-## 3. AI Collaboration
+## 4. How did AI contribute?
 
-**a. How you used AI**
+AI helped me interpret the assignment, brainstorm responsibilities for the four classes, scaffold
+candidate methods, and identify useful test cases.
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I treated AI output as a proposal rather than the source of truth. I compared suggestions to the
+project instructions and revised ideas that either increased scope unnecessarily or did not map
+cleanly to the required classes.
 
-**b. Judgment and verification**
+One useful AI-assisted discussion concerned conflict detection. A proposed conflict algorithm
+made it obvious that tasks needed durations. I accepted the reasoning but revised the data model
+and UML myself so the final design stayed internally consistent.
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+AI also suggested keeping scheduling behavior outside the Streamlit UI. I accepted that because
+it supports the project's CLI-first requirement and makes automated tests meaningful.
 
----
+## 5. What AI suggestions did I reject or limit?
 
-## 4. Testing and Verification
+I intentionally did not add database persistence, login/authentication, external calendar APIs,
+notifications, machine-learning predictions, or a chatbot.
 
-**a. What you tested**
+Those features could be useful in a larger product, but they were not needed to demonstrate the
+required OOP and scheduling behaviors. Adding them would increase implementation and testing
+scope without improving evidence for the core learning objectives.
 
-- What behaviors did you test?
-- Why were these tests important?
+I also bounded recurring-task expansion to a caller-selected number of occurrences rather than
+automatically generating an unlimited schedule.
 
-**b. Confidence**
+## 6. What would I improve next?
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+A next version could add:
 
----
+- persistent storage,
+- editing/deleting tasks through the UI,
+- notifications/reminders,
+- more recurrence rules,
+- per-pet schedule filters,
+- calendar export,
+- user authentication.
 
-## 5. Reflection
-
-**a. What went well**
-
-- What part of this project are you most satisfied with?
-
-**b. What you would improve**
-
-- If you had another iteration, what would you improve or redesign?
-
-**c. Key takeaway**
-
-- What is one important thing you learned about designing systems or working with AI on this project?
+Before adding those features, I would extend the tests and revise the UML again so design,
+implementation, and documentation continue to describe the same product.

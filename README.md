@@ -1,94 +1,207 @@
-# PawPal+ (Module 2 Project)
+# PawPal+
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+PawPal+ is a Python pet-care scheduling application built for CEN 4010 / CodePath Project 2.
 
-## Scenario
+It tracks pet-care routines such as feedings, walks, medications, and appointments while using
+object-oriented design and scheduling algorithms to organize work.
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+## Project Goals
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+This project demonstrates:
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+- object-oriented design with `Owner`, `Pet`, `Task`, and `Scheduler`
+- Mermaid.js UML modeling
+- CLI-first backend development
+- chronological and priority-based sorting
+- recurring-task generation
+- time-overlap conflict detection
+- Streamlit session-state integration
+- automated verification with pytest
+- documentation of AI-assisted development decisions
 
-## What you will build
+## Architecture
 
-Your final app should:
+```text
+Owner
+  └── Pet(s)
+        └── Task(s)
+              ↕
+          Scheduler
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+pawpal_system.py  -> core domain + algorithms
+main.py           -> CLI verification
+test_pawpal.py    -> automated verification
+app.py            -> Streamlit UI
+```
 
-## Getting started
+The UI depends on the backend. Scheduling rules are intentionally not implemented inside the
+Streamlit page so the backend can be tested independently.
 
-### Setup
+## Files
+
+| File | Purpose |
+|---|---|
+| `pawpal_system.py` | Core OOP classes and scheduling algorithms |
+| `main.py` | CLI demonstration of backend behavior |
+| `app.py` | Streamlit user interface |
+| `test_pawpal.py` | Automated pytest suite |
+| `uml.md` | Final Mermaid UML diagram and revision note |
+| `reflection.md` | Consolidated project/AI reflection |
+| `requirements.txt` | Python dependencies |
+| `.gitignore` | Files excluded from Git |
+
+## Setup
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### macOS/Linux
+
+```bash
+source .venv/bin/activate
+```
+
+Then:
+
+```bash
 pip install -r requirements.txt
 ```
 
-### Suggested workflow
+## Phase 1 — UML Design
 
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.
+Open `uml.md`. GitHub renders Mermaid diagrams automatically.
 
-## 🖥️ Sample Output
+The final design uses four main classes:
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+- **Owner** — stores the owner and owned pets
+- **Pet** — stores pet identity and care tasks
+- **Task** — stores one care task and its scheduling information
+- **Scheduler** — performs sorting, recurrence expansion, and conflict detection
 
-```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
-```
+## Phase 2 — Core Implementation / CLI First
 
-## 🧪 Testing PawPal+
+Run:
 
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python main.py
 ```
 
-Sample test output:
+This demonstrates:
 
+- creation of an owner and pet
+- task creation
+- chronological scheduling
+- recurrence
+- conflict detection
+
+## Phase 3 — Streamlit UI
+
+Run:
+
+```bash
+streamlit run app.py
 ```
-# Paste your pytest output here
+
+The app uses `st.session_state` so owner, pet, and task data survive Streamlit reruns during
+the active browser session.
+
+## Phase 4 — Algorithmic Layer
+
+### Sorting
+
+Tasks are ordered by:
+
+1. due date/time,
+2. priority (`1` = highest),
+3. task name for deterministic ordering.
+
+### Recurrence
+
+The prototype supports:
+
+- daily
+- weekly
+
+`Scheduler.expand_recurrence()` produces a bounded list instead of creating an infinite series.
+
+### Conflict Detection
+
+A conflict exists when two active tasks overlap:
+
+```text
+task_a.start < task_b.end
+AND
+task_b.start < task_a.end
 ```
 
-## 📐 Smarter Scheduling
+Two tasks are **not** conflicts when one begins exactly when the other ends.
 
-> Fill in once you've implemented scheduling logic.
+## Phase 5 — Testing
 
-| Feature | Method(s) | Notes |
-|---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+Run:
 
-## 📸 Demo Walkthrough
+```bash
+pytest -v
+```
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+The suite verifies:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+- chronological sorting
+- priority tie-breaking
+- daily recurrence
+- weekly recurrence
+- overlapping-task conflicts
+- adjacent non-conflicting tasks
+- completed-task behavior
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+## Phase 6 — Documentation and Reflection
+
+The final UML, implementation, README, tests, and reflection describe the same system.
+
+See `reflection.md` for specific AI collaboration decisions and revisions.
+
+## GitHub Submission Checklist
+
+Before submitting:
+
+- [ ] Create/use the correct GitHub repository
+- [ ] Make the repository public
+- [ ] Push all required files
+- [ ] Confirm `README.md` renders correctly
+- [ ] Confirm Mermaid UML renders on GitHub
+- [ ] Run `python main.py`
+- [ ] Run `pytest -v`
+- [ ] Run `streamlit run app.py`
+- [ ] Make multiple meaningful commits
+- [ ] Confirm reflection contains specific honest details
+- [ ] Push final changes before Friday, November 6 at 11:59 PM EST
+- [ ] Submit through Week 5
+
+## Suggested Meaningful Commit History
+
+Do **not** create fake history after the fact. As you work, commits can resemble:
+
+```text
+design initial PawPal UML and domain model
+implement Owner Pet and Task backend classes
+add scheduler sorting recurrence and conflict logic
+add CLI backend demonstration
+add pytest scheduling coverage
+integrate Streamlit session state UI
+polish README UML and reflection
+```
+
+## AI Use
+
+AI was used as a development partner for requirement interpretation, candidate UML design,
+code scaffolding, algorithm discussion, and test-case suggestions.
+
+Generated suggestions were reviewed against the assignment. The final design includes revisions
+made for correctness, especially task duration for conflict detection and bounded recurrence.
